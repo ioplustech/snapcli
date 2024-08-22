@@ -2,7 +2,7 @@ import commander, { type Command } from 'commander'
 import colors from 'colors'
 import pkg from '../../../package.json'
 import { runVoteService } from '../commands/runVoteService'
-import { runLogin } from './login'
+import { loginWithPrivateKey, loginWithKeystore } from './login'
 import { setLang } from '../commands/lang'
 import { listWallets, useWallet } from '../commands/wallet'
 import { setProxy } from '../commands/proxy'
@@ -28,7 +28,19 @@ export async function register () {
     .action(async (key, options, command) => {
       snapcliDebug('login with privateKey')
       // checkPrivateKey(key)
-      await runLogin(key)
+      await loginWithPrivateKey(key)
+    })
+
+  program
+    .command('loginKeystore <keyStore> <password>')
+    .description(
+      'login with keystore. input your keyStore file path or keyStore json and password'
+    )
+    .action(async (keyStore, password) => {
+      snapcliDebug('login with loginKeystore')
+      // checkPrivateKey(key)
+      console.log(keyStore, password)
+      await loginWithKeystore(keyStore, password)
     })
 
   program

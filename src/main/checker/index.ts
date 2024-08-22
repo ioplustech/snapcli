@@ -4,6 +4,8 @@ import { isAddress } from 'ethers/lib/utils'
 import { ethers } from 'ethers'
 import { snapcliDebug } from '../prepare/debug'
 import type ora from 'ora'
+import { readFileSync } from 'fs-extra'
+import path from 'path'
 
 export enum errors {
   ADDRESS_IS_INVALID = 'address is invalid!',
@@ -13,6 +15,8 @@ export enum errors {
   NO_PROPOSALS = 'no proposals!',
   NO_SCORE = 'cannot vote while you don\'t have enough score!',
   NO_SPACE = 'need space!',
+  KEYSTORE_NEEDED = 'keystore needed!',
+  KEYSTORE_ERROR = 'invalid keystore or password!',
 }
 
 export const checkSpace = (value: string) => {
@@ -67,4 +71,36 @@ export const checkScore = (score: number, spinner: ora.Ora) => {
     process.exit(1)
   }
   return true
+}
+function generateFromStore (keystore: string, password: string) {
+  try {
+    const wa = ethers.Wallet.fromEncryptedJsonSync(keystore, password)
+    return wa
+  } catch (err) {
+    console.error(colors.red(errors.KEYSTORE_ERROR))
+    process.exit(1)
+  }
+}
+
+export const checkKeystore = (keystore: string, password: string) => {
+  if (!keystore) {
+    console.error(colors.red(errors.KEYSTORE_NEEDED))
+    process.exit(1)
+  }
+  const pwd = process.cwd()
+  let isJson = false
+  try {
+    JSON.parse(keystore)
+    isJson = true
+  } catch (err) {}
+  if (isJson) {
+    return generateFromStore(keystore, password)
+  }
+  try {
+    const keystoreContent = readFileSync(path.resolve(pwd, keystore), 'utf-8')
+    return generateFromStore(keystoreContent, password)
+  } catch (err) {
+    console.error(colors.red(errors.KEYSTORE_ERROR))
+    process.exit(1)
+  }
 }
