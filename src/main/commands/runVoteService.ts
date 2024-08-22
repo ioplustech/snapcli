@@ -1,10 +1,11 @@
-import { spinnerStart } from '../../utils'
+import { debugLog, spinnerStart, writeTmpJSON } from '../../utils'
 import { snapcliDebug } from '../prepare/debug'
 import { walletStorage } from '../service/wallet'
 import { snapshot } from '../service/snapshot'
 import { checkProposals, checkScore, checkWallets } from '../checker'
 import { type Command } from 'commander'
 import colors from 'colors'
+import { argv } from '../prepare/arg'
 
 export interface Proposal {
   id: 'string'
@@ -23,6 +24,7 @@ export async function voteProposals (proposals: Proposal[]) {
   for (const proposal of proposals) {
     const proposalDetailSpin = spinnerStart(`starting to getProposalDetail [${proposal.title}]...`)
     const proposalDetail = await snapshot.getProposalDetail(proposal.id, proposal.title)
+    debugLog('proposalDetail', proposalDetail)
     proposalDetailSpin.succeed('getProposalDetail succeed!')
 
     const checkScoreSpin = spinnerStart(`starting to checkScore [${proposal.title}]...`)
@@ -37,9 +39,10 @@ export async function voteProposals (proposals: Proposal[]) {
       proposal: proposalDetail,
       choice
     }
-    // console.log(data)
+    debugLog('voteData', data)
     const voteSpin = spinnerStart(`starting to vote [${proposal.title}]...`)
     const id = await snapshot.vote(data)
+    debugLog('voteId', id)
     voteSpin.succeed(`vote: ${id as string} succeed!\n`)
   }
   process.exit(0)
@@ -52,6 +55,7 @@ export async function runVoteService (space: string, opts: Record<string, string
   const getProposalsSpin = spinnerStart('starting to getProposals...')
   const proposals = await snapshot.getProposals(space)
   checkProposals(proposals, getProposalsSpin)
+  debugLog('proposals', proposals)
   getProposalsSpin.succeed(`getProposals ${colors.green(String((proposals as string[]).length))} succeed!`)
 
   const wallets = await walletStorage.getWallets()

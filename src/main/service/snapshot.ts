@@ -188,7 +188,7 @@ class SnapshotService {
   async getChoice (proposalDetail: any): Promise<number | number[]> {
     const { type, choices } = proposalDetail
     let prompt = 'please choose which your want to vote then press enter!'
-    const choicesPrompt = `${(choices as string[]).map((choice: string, index: number) => `${choice}(${index + 1})`).join(' ')}: `
+    const choicesPrompt = `${(choices as string[]).map((choice: string, index: number) => `(${index + 1})${choice}`).join(' ')}: `
     if (type === 'single-choice') {
       console.log(colors.green(prompt))
       const choice = await commandLine(choicesPrompt)
@@ -263,7 +263,7 @@ class SnapshotService {
       }
     };
     (submitBody as any).sig = await this.getSignature(submitBody)
-    snapcliDebug(`got signature: ${data.sig as string} succeed!`)
+    snapcliDebug(`get signature: ${data.sig as string} succeed!`)
     const id = await this.sendVoteRequest(submitBody)
     return id
   }

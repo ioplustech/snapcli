@@ -3,7 +3,6 @@ import { snapcliDebug } from './prepare/debug'
 // import { checkVersion } from './prepare/version'
 
 async function main () {
-  // await checkVersion()
   await register()
 }
 

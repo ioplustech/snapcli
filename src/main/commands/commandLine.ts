@@ -8,7 +8,6 @@ export const commandLine = async (prompt: string, continueFn?: (ans: string) => 
       continue
     }
     stop = true
-    // close
     return answer
   }
 }

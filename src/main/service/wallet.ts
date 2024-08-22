@@ -152,17 +152,3 @@ class EncryptedWalletStorage {
 const masterKey = readHomeEnv(appAuthPathKey, appEnvConfigPath)
 
 export const walletStorage = EncryptedWalletStorage.getInstance(appAuthPath, masterKey)
-
-// async function run () {
-//   const wallet1 = await walletStorage.addWallet('0x123...', '0xabc...')
-//   const wallet2 = await walletStorage.addWallet('0x456...', '0xdef...')
-//   const walletList = await walletStorage.getWallets()
-//   console.log(wallet1, wallet2, walletList)
-//   const privateKey1 = walletStorage.getPrivateKey(wallet1)
-//   const privateKey2 = walletStorage.getPrivateKey(wallet2)
-//   console.log(privateKey1, privateKey2)
-//   const proposals = await snapshot.getProposals('aave.eth')
-//   console.log(proposals)
-// }
-
-// run().catch(console.error)

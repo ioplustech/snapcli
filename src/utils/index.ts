@@ -1,3 +1,4 @@
+import { debug } from './../main/prepare/arg';
 import axios, { type AxiosRequestConfig, type AxiosResponse } from 'axios'
 import readline from 'readline'
 import os from 'os'
@@ -9,7 +10,8 @@ import { appAuthPath, appConfigPath } from '../constants'
 import path from 'path'
 import ora from 'ora'
 import crypto from 'crypto'
-import { ensureFileSync, readFileSync, writeFileSync } from 'fs-extra'
+import { ensureDirSync, ensureFileSync, readFileSync, writeFileSync } from 'fs-extra'
+import { argv } from '../main/prepare/arg'
 const rl = readline.createInterface({
   input: process.stdin,
   output: process.stdout
@@ -253,4 +255,22 @@ export const writeHomeAuth = function (prop: string, value: string) {
     newContent += content
   }
   writeFileSync(appAuthPath, newContent, 'utf-8')
+}
+
+export const wirteJSON = (path: string, json: any) => {
+  writeFileSync(path, JSON.stringify(json, null, 2))
+}
+
+export const writeTmpJSON = (name: string, json: any) => {
+  const tmpDir = path.resolve(appConfigPath, 'tmp')
+  ensureDirSync(tmpDir)
+  const p = path.resolve(tmpDir, `${name}.json`)
+  wirteJSON(p, json)
+}
+
+export const debugLog = (name: string, json: any) => {
+  if (argv.debug || argv.d) {
+    snapcliDebug(`debugLog: ${name}`)
+    writeTmpJSON(name, json)
+  }
 }
