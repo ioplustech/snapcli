@@ -126,7 +126,7 @@ class EncryptedWalletStorage {
       snapcliDebug('initLoad walletList succeed!')
     } catch (error) {
       // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-      snapcliDebug(`initLoad Error: ${(error as any).message}`)
+      snapcliDebug('initLoad Error: ', error)
       console.log(colors.red('load local wallet error, please run snapcli clean auth'))
       process.exit(1)
     }

@@ -1,4 +1,3 @@
-import { debug } from './../main/prepare/arg';
 import axios, { type AxiosRequestConfig, type AxiosResponse } from 'axios'
 import readline from 'readline'
 import os from 'os'
@@ -7,6 +6,7 @@ import child from 'child_process'
 import { AbortController } from 'node-abort-controller'
 import { snapcliDebug } from '../main/prepare/debug'
 import { appAuthPath, appConfigPath } from '../constants'
+import pkg from '../../package.json'
 import path from 'path'
 import ora from 'ora'
 import crypto from 'crypto'
@@ -274,3 +274,5 @@ export const debugLog = (name: string, json: any) => {
     writeTmpJSON(name, json)
   }
 }
+
+export const pkgName = pkg?.name?.includes('/') ? pkg?.name?.split('/')[1] : pkg?.name

@@ -3,8 +3,10 @@ import { walletStorage } from '../service/wallet'
 
 export async function listWallets () {
   const list = await walletStorage.getWallets()
-  console.log(colors.green('local wallet list:'))
-  console.log(list.map((wallet) => wallet.address))
+  console.log(colors.green('wallet list:'))
+  const addressList = list.map((wallet) => wallet.address)
+  console.log(addressList)
+  console.log(colors.green(`active: ${addressList[addressList.length - 1]}`))
   process.exit(0)
 }
 

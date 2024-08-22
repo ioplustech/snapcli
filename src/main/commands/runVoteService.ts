@@ -1,11 +1,10 @@
-import { debugLog, spinnerStart, writeTmpJSON } from '../../utils'
+import { debugLog, spinnerStart } from '../../utils'
 import { snapcliDebug } from '../prepare/debug'
 import { walletStorage } from '../service/wallet'
 import { snapshot } from '../service/snapshot'
 import { checkProposals, checkScore, checkWallets } from '../checker'
 import { type Command } from 'commander'
 import colors from 'colors'
-import { argv } from '../prepare/arg'
 
 export interface Proposal {
   id: 'string'

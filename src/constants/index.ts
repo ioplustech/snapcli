@@ -1,6 +1,6 @@
 import os from 'os'
 import path from 'path'
-import pkg from '../../package.json'
+import { pkgName } from '../utils'
 
 export const appName = 'snapcli'
 export const appEnvName = '.env'
@@ -11,7 +11,7 @@ export const appConfigPath = path.resolve(os.homedir(), appConfigDirName)
 export const appEnvConfigPath = path.resolve(appConfigPath, appEnvName)
 export const appLogPath = path.resolve(appConfigPath, appConfigLog)
 export const appAuthPath = path.resolve(appConfigPath, appConfigAuth)
-export const appAuthPathKey = `${pkg.name}_AUTH_KEY`
+export const appAuthPathKey = `${pkgName}_AUTH_KEY`
 
 function getProperty<T, K extends keyof T> (obj: T, key: K): T[K] {
   return obj[key]

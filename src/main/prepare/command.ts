@@ -55,7 +55,7 @@ export async function register () {
 
   program
     .command('listWallets')
-    .description('list your saved wallets!')
+    .description('list your saved wallets and active wallet!')
     .action(async (key, options, command) => {
       snapcliDebug('listWallets:', key, options)
       await listWallets()
