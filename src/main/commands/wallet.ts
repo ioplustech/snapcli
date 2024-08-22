@@ -10,8 +10,8 @@ export async function listWallets () {
   process.exit(0)
 }
 
-export async function activate (address: string) {
+export async function useWallet (address: string) {
   await walletStorage.setActiveAddress(address)
-  console.log(colors.green(`activate wallet:${address} succeed`))
+  console.log(colors.green(`useWallet: ${address} succeed`))
   process.exit(0)
 }

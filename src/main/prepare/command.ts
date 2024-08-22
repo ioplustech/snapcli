@@ -4,7 +4,7 @@ import pkg from '../../../package.json'
 import { runVoteService } from '../commands/runVoteService'
 import { runLogin } from './login'
 import { setLang } from '../commands/lang'
-import { listWallets, activate } from '../commands/wallet'
+import { listWallets, useWallet } from '../commands/wallet'
 import { setProxy } from '../commands/proxy'
 import { checkBeforeAction } from './checker'
 import { snapcliDebug } from './debug'
@@ -21,6 +21,33 @@ export async function register () {
     .option('-d, --debug', 'show debug log', false)
 
   program
+    .command('login [privateKey]')
+    .description(
+      'login with private key. Then your no need specify --privateKey any more'
+    )
+    .action(async (key, options, command) => {
+      snapcliDebug('login with privateKey')
+      // checkPrivateKey(key)
+      await runLogin(key)
+    })
+
+  program
+    .command('listWallets')
+    .description('list your saved wallets and active wallet!')
+    .action(async (key, options, command) => {
+      snapcliDebug('listWallets:', key, options)
+      await listWallets()
+    })
+
+  program
+    .command('use [address]')
+    .description('use wallet address')
+    .action(async (key, options, command) => {
+      snapcliDebug('use:', key, options)
+      await useWallet(key)
+    })
+
+  program
     .command('vote [space]')
     .description('vote for specify space,like <aave.eth> You can find your spaces at https://snapshot.org/#/.')
     .option('-y, --yes', 'vote without confirm')
@@ -35,38 +62,11 @@ export async function register () {
     })
 
   program
-    .command('login [privateKey]')
-    .description(
-      'login with proviteKey. Then your no need specify --privateKey any more'
-    )
-    .action(async (key, options, command) => {
-      snapcliDebug('login with privateKey')
-      // checkPrivateKey(key)
-      await runLogin(key)
-    })
-
-  program
     .command('clean [item]')
     .description('clean local settings')
     .action((key, options, command) => {
       snapcliDebug('clean:', key, options)
       setLang(key)
-    })
-
-  program
-    .command('listWallets')
-    .description('list your saved wallets and active wallet!')
-    .action(async (key, options, command) => {
-      snapcliDebug('listWallets:', key, options)
-      await listWallets()
-    })
-
-  program
-    .command('activate [address]')
-    .description('activate wallet address')
-    .action(async (key, options, command) => {
-      snapcliDebug('activate:', key, options)
-      await activate(key)
     })
 
   program
