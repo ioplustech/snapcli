@@ -1,7 +1,7 @@
 {
   "name": "@ioplus/snapcli",
   "description": "Command-line tool for casting votes on Snapshot.org DAO proposals directly from your terminal.",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "main": "index.js",
   "keywords": [
     "snapshot",
@@ -42,7 +42,7 @@
     "@types/minimist": "^1.2.2",
     "@types/node": "^18.14.5",
     "@typescript-eslint/eslint-plugin": "^5.54.0",
-    "@typescript-eslint/parser": "^5.54.0",
+    "@typescript-eslint/parser": "^5.54.0", 
     "eslint": "^8.35.0",
     "eslint-config-standard-with-typescript": "^34.0.0",
     "eslint-plugin-import": "^2.27.5",

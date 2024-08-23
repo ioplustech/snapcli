@@ -21,17 +21,17 @@ export interface Proposal {
 
 export async function voteProposals (proposals: Proposal[]) {
   for (const proposal of proposals) {
-    const proposalDetailSpin = spinnerStart(`starting to getProposalDetail [${proposal.title}]...`)
+    const proposalDetailSpin = spinnerStart(`start to getProposalDetail [${proposal.title}]...`)
     const proposalDetail = await snapshot.getProposalDetail(proposal.id, proposal.title)
     debugLog('proposalDetail', proposalDetail)
     proposalDetailSpin.succeed('getProposalDetail succeed!')
 
-    const checkScoreSpin = spinnerStart(`starting to checkScore [${proposal.title}]...`)
+    const checkScoreSpin = spinnerStart(`start to checkScore [${proposal.title}]...`)
     const score = await snapshot.checkScore(proposalDetail, walletStorage.getWallet().address)
     checkScore(score, checkScoreSpin)
     checkScoreSpin.succeed(`checkScore: ${colors.green(String(score as number))} succeed!`)
 
-    console.log(colors.yellow(`starting to vote with: ${proposal?.space?.id} - ${proposal?.title} ${score as number}`))
+    console.log(colors.yellow(`start to vote with: ${proposal?.space?.id} - ${proposal?.title} ${score as number}`))
     const choice = await snapshot.getChoice(proposalDetail)
     const data = {
       address: walletStorage.getWallet().address,
@@ -39,7 +39,7 @@ export async function voteProposals (proposals: Proposal[]) {
       choice
     }
     debugLog('voteData', data)
-    const voteSpin = spinnerStart(`starting to vote [${proposal.title}]...`)
+    const voteSpin = spinnerStart(`start to vote [${proposal.title}]...`)
     const id = await snapshot.vote(data)
     debugLog('voteId', id)
     voteSpin.succeed(`vote: ${id as string} succeed!\n`)
@@ -51,7 +51,7 @@ export async function runVoteService (space: string, opts: Record<string, string
   snapcliDebug('runVoteService...')
   snapcliDebug('opts', opts)
 
-  const getProposalsSpin = spinnerStart('starting to getProposals...')
+  const getProposalsSpin = spinnerStart('start to getProposals...')
   const proposals = await snapshot.getProposals(space)
   checkProposals(proposals, getProposalsSpin)
   debugLog('proposals', proposals)

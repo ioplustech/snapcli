@@ -97,7 +97,7 @@ export const fetchApiWithTimeout = async (
   body: any,
   timeout: string | number
 ) => await new Promise((resolve, reject) => {
-  const start = ora('starting to check chaty version...').start()
+  const start = ora('start to check chaty version...').start()
   try {
     const controller = new AbortController()
     if (params) {
