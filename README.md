@@ -33,18 +33,21 @@ $ snapcli
 Usage: snapcli <command> [options]
 
 Options:
-  -V, --version           output the version number
-  -d, --debug             show debug log (default: false)
-  -h, --help              display help for command
+  -V, --version                        output the version number
+  -d, --debug                          show debug log (default: false)
+  -h, --help                           display help for command
 
 Commands:
-  login [privateKey]      login with private key. Then you no longer need specify --privateKey any more
-  listWallets             list your saved wallets and active wallet!
-  use [address]           use wallet address
-  vote [options] [space]  vote for specified space, like <aave.eth>. You can find your spaces at https://snapshot.org/#/
-  clean [item]            clean local settings
-  proxy [proxyUrl]        set proxy for requests!
-  help [command]          display help for command
+  login [privateKey]                   login with private key. Then your no need specify --privateKey any more
+  loginKeystore <keyStore> <password>  login with keystore. input your keyStore file path or keyStore json and password
+  list|listWallets                     list your saved wallets and active wallet
+  use [address]                        use wallet address
+  del|delete [address]                 delete wallet address
+  vote [options] [space]               vote for specify space,like <aave.eth> You can find your spaces at https://snapshot.org/#/.
+  clean [item]                         clean local settings
+  proxy [proxyUrl]                     set proxy for request
+  help [command]                       display help for command
+
 ```
 
 ## Detailed Command Descriptions 📚
@@ -60,7 +63,7 @@ Securely encrypt and save your private key locally. This eliminates the need to 
 ### listWallets 👛
 
 ```bash
-$ snap listWallets
+$ snap list|listWallets
 ```
 
 Display all wallet addresses saved locally, as well as the currently active wallet address.
