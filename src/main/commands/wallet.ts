@@ -15,3 +15,8 @@ export async function useWallet (address: string) {
   console.log(colors.green(`useWallet: ${address} succeed`))
   process.exit(0)
 }
+export async function delWallet (address: string) {
+  await walletStorage.delAddress(address)
+  console.log(colors.green(`delete: ${address} succeed`))
+  process.exit(0)
+}

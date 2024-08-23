@@ -17,6 +17,7 @@ export enum errors {
   NO_SPACE = 'need space!',
   KEYSTORE_NEEDED = 'keystore needed!',
   KEYSTORE_ERROR = 'invalid keystore or password!',
+  ACTIVE_ADDRESS_INVALID = 'please use wallet in wallet list!',
 }
 
 export const checkSpace = (value: string) => {
@@ -46,12 +47,19 @@ export const checkPrivateKey = (privateKey: string) => {
     console.error(colors.red(errors.PRIVATEKEY_IS_INVALID))
     process.exit(1)
   }
-
   return true
 }
 export const checkWallets = (wallets: WalletData[]) => {
   if (!wallets?.length) {
     console.error(colors.red(errors.WALLET_IS_NEEDED))
+    process.exit(1)
+  }
+  return true
+}
+export const checkActiveAddress = (address: string, wallets: WalletData[]) => {
+  if (!wallets?.find((wa) => wa.address === address)) {
+    console.error(colors.red(errors.ACTIVE_ADDRESS_INVALID))
+    console.error(wallets.map((wa) => wa.address))
     process.exit(1)
   }
   return true

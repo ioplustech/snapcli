@@ -4,7 +4,7 @@ import pkg from '../../../package.json'
 import { runVoteService } from '../commands/runVoteService'
 import { loginWithPrivateKey, loginWithKeystore } from './login'
 import { setLang } from '../commands/lang'
-import { listWallets, useWallet } from '../commands/wallet'
+import { listWallets, useWallet, delWallet } from '../commands/wallet'
 import { setProxy } from '../commands/proxy'
 import { checkBeforeAction } from './checker'
 import { snapcliDebug } from './debug'
@@ -45,6 +45,7 @@ export async function register () {
 
   program
     .command('listWallets')
+    .alias('list')
     .description('list your saved wallets and active wallet')
     .action(async (key, options, command) => {
       snapcliDebug('listWallets:', key, options)
@@ -57,6 +58,15 @@ export async function register () {
     .action(async (key, options, command) => {
       snapcliDebug('use:', key, options)
       await useWallet(key)
+    })
+
+  program
+    .command('del [address]')
+    .alias('delete')
+    .description('delete wallet address')
+    .action(async (key, options, command) => {
+      snapcliDebug('use:', key, options)
+      await delWallet(key)
     })
 
   program

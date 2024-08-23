@@ -6,7 +6,7 @@ import { readHomeEnv } from '../../utils'
 import { snapcliDebug } from '../prepare/debug'
 import { randomBytes, createCipheriv, createDecipheriv } from 'crypto'
 import { appAuthPathKey, appEnvConfigPath, appAuthPath } from '../../constants'
-import { checkAddress, checkPrivateKey } from '../checker'
+import { checkAddress, checkActiveAddress, checkPrivateKey } from '../checker'
 
 export interface WalletData {
   address: string
@@ -83,6 +83,7 @@ class EncryptedWalletStorage {
 
   async setActiveAddress (address: string): Promise<void> {
     const walletDataList = await this.loadWalletsFromFile()
+    checkActiveAddress(address, walletDataList)
     const newList = []
     let hostWa = walletDataList[walletDataList.length - 1]
     for (const wa of walletDataList) {
@@ -96,6 +97,20 @@ class EncryptedWalletStorage {
     const walletDataString = newList.map(({ address, encryptedPrivateKey, iv }) => `${address},${encryptedPrivateKey},${iv}`).join('\n')
     await fs.writeFile(this.filePath, walletDataString)
     snapcliDebug(`setActiveAddress to ${this.filePath} succeed!`)
+  }
+
+  async delAddress (address: string): Promise<void> {
+    const walletDataList = await this.loadWalletsFromFile()
+    const newList = []
+    for (const wa of walletDataList) {
+      if (wa.address === address) {
+        continue
+      }
+      newList.push(wa)
+    }
+    const walletDataString = newList.map(({ address, encryptedPrivateKey, iv }) => `${address},${encryptedPrivateKey},${iv}`).join('\n')
+    await fs.writeFile(this.filePath, walletDataString)
+    snapcliDebug(`write new ${this.filePath} succeed!`)
   }
 
   private async loadWalletsFromFile (): Promise<WalletData[]> {

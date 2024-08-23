@@ -21,10 +21,10 @@ export interface Proposal {
 
 export async function voteProposals (proposals: Proposal[]) {
   for (const proposal of proposals) {
-    const proposalDetailSpin = spinnerStart(`start to getProposalDetail [${proposal.title}]...`)
+    const proposalDetailSpin = spinnerStart(`start to get proposal detail [${proposal.title}]...`)
     const proposalDetail = await snapshot.getProposalDetail(proposal.id, proposal.title)
     debugLog('proposalDetail', proposalDetail)
-    proposalDetailSpin.succeed('getProposalDetail succeed!')
+    proposalDetailSpin.succeed('get proposal detail succeed!')
 
     const checkScoreSpin = spinnerStart(`start to checkScore [${proposal.title}]...`)
     const score = await snapshot.checkScore(proposalDetail, walletStorage.getWallet().address)

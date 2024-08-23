@@ -7,6 +7,7 @@ import { checkKeystore } from '../checker'
 export const loginWithKeystore = async (keystore: string, password: string) => {
   const { privateKey } = checkKeystore(keystore, password)
   const wallet = await walletStorage.addWallet(privateKey)
+  console.clear()
   console.log(colors.green(`login ${wallet.address} succeed!`))
   process.exit(0)
 }
@@ -25,6 +26,7 @@ export const loginWithPrivateKey = async (privateKey?: string) => {
     privateKey = await commandLine(prompt, continueFn)
   }
   const wallet = await walletStorage.addWallet(privateKey!)
+  console.clear()
   console.log(colors.green(`login ${wallet.address} succeed!`))
   process.exit(0)
 }
