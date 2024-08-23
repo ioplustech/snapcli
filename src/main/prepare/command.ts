@@ -45,7 +45,7 @@ export async function register () {
 
   program
     .command('listWallets')
-    .description('list your saved wallets and active wallet!')
+    .description('list your saved wallets and active wallet')
     .action(async (key, options, command) => {
       snapcliDebug('listWallets:', key, options)
       await listWallets()
@@ -84,7 +84,7 @@ export async function register () {
   program
     .command('proxy [proxyUrl]')
     .description(
-      'set proxy for request!'
+      'set proxy for request'
     )
     .action((key, options, command) => {
       snapcliDebug('proxy:', key, options)

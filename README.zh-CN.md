@@ -43,7 +43,7 @@ Commands:
   use [address]           use wallet address
   vote [options] [space]  vote for specified space, like <aave.eth>. You can find your spaces at https://snapshot.org/#/.
   clean [item]            clean local settings
-  proxy [proxyUrl]        set proxy for request!
+  proxy [proxyUrl]        set proxy for request
   help [command]          display help for command
 ```
 
