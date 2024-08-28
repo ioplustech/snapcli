@@ -118,6 +118,12 @@ class EncryptedWalletStorage {
       const fileContents = await fs.readFile(this.filePath, 'utf8')
       const walletDataList: WalletData[] = fileContents.split('\n').map((line) => line.trim()).filter(Boolean).map((line) => {
         const [address, encryptedPrivateKey, iv] = line.split(',')
+        if (!address || !encryptedPrivateKey || !iv) {
+          snapcliDebug('loadWalletsFromFile Error: !address || !encryptedPrivateKey || !iv === false')
+          console.log(colors.red('\nload local wallet error, please run snapcli clean auth\n'))
+          process.exit(1)
+          // throw new Error(`loadWallet error!`)
+        }
         return { address, encryptedPrivateKey, iv }
       })
       return walletDataList
@@ -141,9 +147,9 @@ class EncryptedWalletStorage {
       snapcliDebug('initLoad walletList succeed!')
     } catch (error) {
       // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-      snapcliDebug('initLoad Error: ', error)
-      console.log(colors.red('load local wallet error, please run snapcli clean auth'))
-      process.exit(1)
+      snapcliDebug('initLoad Error: ', (error as Error).message);
+      // console.log(colors.red('\nload local wallet error, please run snapcli clean auth\n'))
+      // process.exit(1)
     }
   }
 

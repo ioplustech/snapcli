@@ -3,12 +3,12 @@ import colors from 'colors'
 import pkg from '../../../package.json'
 import { runVoteService } from '../commands/runVoteService'
 import { loginWithPrivateKey, loginWithKeystore } from './login'
-import { setLang } from '../commands/lang'
+import { cleanItem } from '../commands/clean'
 import { listWallets, useWallet, delWallet } from '../commands/wallet'
 import { setProxy } from '../commands/proxy'
 import { checkBeforeAction } from './checker'
 import { snapcliDebug } from './debug'
-import { checkSpace } from '../checker'
+import { checkSpace , checkClean} from '../checker'
 
 const program = new commander.Command()
 
@@ -88,7 +88,8 @@ export async function register () {
     .description('clean local settings')
     .action((key, options, command) => {
       snapcliDebug('clean:', key, options)
-      setLang(key)
+      checkClean(key)
+      cleanItem(key)
     })
 
   program

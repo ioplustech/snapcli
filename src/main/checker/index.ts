@@ -15,6 +15,7 @@ export enum errors {
   NO_PROPOSALS = 'no proposals!',
   NO_SCORE = 'cannot vote while you don\'t have enough score!',
   NO_SPACE = 'need space!',
+  NAME_NEEDED = 'item name needed!',
   KEYSTORE_NEEDED = 'keystore needed!',
   KEYSTORE_ERROR = 'invalid keystore or password!',
   ACTIVE_ADDRESS_INVALID = 'please use wallet in wallet list!',
@@ -23,6 +24,13 @@ export enum errors {
 export const checkSpace = (value: string) => {
   if (!value) {
     console.error(colors.red(errors.NO_SPACE))
+    process.exit(1)
+  }
+  return true
+}
+export const checkClean = (value: string) => {
+  if (!value) {
+    console.error(colors.red(errors.NAME_NEEDED))
     process.exit(1)
   }
   return true

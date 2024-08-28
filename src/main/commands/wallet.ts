@@ -6,7 +6,9 @@ export async function listWallets () {
   console.log(colors.green('wallet list:'))
   const addressList = list.map((wallet) => wallet.address)
   console.log(addressList)
-  console.log(colors.green(`active: ${addressList[addressList.length - 1]}`))
+  if (addressList.length) {
+    console.log(colors.green(`active: ${addressList[addressList.length - 1]}`))
+  }
   process.exit(0)
 }
 
