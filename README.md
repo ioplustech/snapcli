@@ -1,4 +1,4 @@
-# @ioplus/snapcli 📸🖥️
+# @ioplus/snapcli 📸
 
 [![npm version](https://badge.fury.io/js/%40ioplus%2Fsnapcli.svg)](https://badge.fury.io/js/%40ioplus%2Fsnapcli)
 [![License: Apache](https://img.shields.io/badge/License-Apache-yellow.svg)](https://opensource.org/license/apache-1-1)
