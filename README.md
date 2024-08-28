@@ -45,7 +45,7 @@ Commands:
   del|delete [address]                 delete wallet address
   vote [options] [space]               vote for specify space,like <aave.eth> You can find your spaces at https://snapshot.org/#/.
   clean [item]                         clean local settings
-  proxy [proxyUrl]                     set proxy for request
+  update|u                             update snapcli
   help [command]                       display help for command
 
 ```
