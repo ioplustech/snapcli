@@ -2,7 +2,8 @@ import axios, { type AxiosRequestConfig, type AxiosResponse } from 'axios'
 import readline from 'readline'
 import os from 'os'
 import dotenv from 'dotenv'
-import child from 'child_process'
+import { execSync, type SpawnOptions } from 'child_process'
+import spawn from 'cross-spawn'
 import { AbortController } from 'node-abort-controller'
 import { snapcliDebug } from '../main/prepare/debug'
 import { appAuthPath, appConfigPath } from '../constants'
@@ -136,12 +137,12 @@ export const runChildProcess = (
   args: string[],
   options: any
 ) => {
-  const childProcess = child.spawn(execPath, args, options)
+  const childProcess = spawn(execPath, args, options)
   snapcliDebug(`runChildProcess: ${name}, pid: ${String(childProcess.pid)}`)
-  childProcess.stdout.on('data', (data) => {
+  childProcess.stdout?.on('data', (data) => {
     console.log(data.toString())
   })
-  childProcess.stderr.on('data', (data) => {
+  childProcess.stderr?.on('data', (data) => {
     console.log(data.toString())
   })
   childProcess.on('exit', (code) => {
@@ -155,15 +156,15 @@ export const runChildPromise = async (
   args: string[],
   options: any
 ) => await new Promise((resolve, reject) => {
-  const childProcess = child.spawn(execPath, args, options)
+  const childProcess = spawn(execPath, args, options)
   snapcliDebug(`runChildProcess: ${name}, pid: ${String(childProcess.pid)}`, execPath, args)
   let output = ''
-  childProcess.stdout.on('data', (data) => {
+  childProcess.stdout?.on('data', (data) => {
     output += data.toString() as string
     console.log(data.toString() as string)
   })
   let errorOut = ''
-  childProcess.stderr.on('data', (data) => {
+  childProcess.stderr?.on('data', (data) => {
     errorOut += data.toString() as string
   })
   childProcess.on('exit', (code) => {
@@ -180,9 +181,51 @@ export const runChildPromise = async (
   })
   return childProcess
 })
+interface ProcessResult {
+  stdout: string
+  stderr: string
+}
+
+/**
+ * Runs a command in a child process using spawn.
+ * @param command - The command to run.
+ * @param args - An array of arguments to pass to the command.
+ * @param options - Options to pass to spawn.
+ * @returns A promise that resolves with stdout and stderr strings.
+ */
+export async function runProcess (command: string, args: string[] = [], options: SpawnOptions = {}, showLog = false): Promise<ProcessResult> {
+  return await new Promise((resolve, reject) => {
+    const process = spawn(command, args, options)
+
+    let stdout = ''
+    let stderr = ''
+
+    process.stdout?.on('data', (data: Buffer) => {
+      stdout += data.toString()
+      showLog && console.log(`stdout: ${data.toString()}`)
+    })
+
+    process.stderr?.on('data', (data: Buffer) => {
+      stderr += data.toString()
+      showLog && console.error(`stderr: ${data.toString()}`)
+    })
+
+    process.on('close', (code: number | null) => {
+      if (code === 0) {
+        resolve({ stdout, stderr })
+      } else {
+        reject(new Error(`Process exited with code ${String(code)}\nstderr: ${stderr}`))
+      }
+    })
+
+    process.on('error', (err: Error) => {
+      reject(new Error(`Failed to start process: ${err.message}`))
+    })
+  })
+}
 export const runChildProcessSync = (execStr: string, options: any) => {
   try {
-    const res = child.execSync(execStr, options)
+    const res = execSync(execStr, options)
     snapcliDebug(res.toString())
   } catch (err) {
     console.log(err)
