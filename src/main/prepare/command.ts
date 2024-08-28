@@ -5,10 +5,11 @@ import { runVoteService } from '../commands/runVoteService'
 import { loginWithPrivateKey, loginWithKeystore } from './login'
 import { cleanItem } from '../commands/clean'
 import { listWallets, useWallet, delWallet } from '../commands/wallet'
-import { setProxy } from '../commands/proxy'
+import { updateCLI } from '../commands/updater'
+// import { setProxy } from '../commands/proxy'
 import { checkBeforeAction } from './checker'
 import { snapcliDebug } from './debug'
-import { checkSpace , checkClean} from '../checker'
+import { checkSpace, checkClean } from '../checker'
 
 const program = new commander.Command()
 
@@ -93,13 +94,12 @@ export async function register () {
     })
 
   program
-    .command('proxy [proxyUrl]')
-    .description(
-      'set proxy for request'
-    )
-    .action((key, options, command) => {
-      snapcliDebug('proxy:', key, options)
-      setProxy(key)
+    .command('update')
+    .alias('u')
+    .description('update snapcli')
+    .action(async (key, options, command) => {
+      snapcliDebug('update cli')
+      await updateCLI()
     })
 
   program.on('option:debug', () => {
