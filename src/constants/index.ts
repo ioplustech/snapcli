@@ -2,7 +2,7 @@ import os from 'os'
 import path from 'path'
 import { pkgName } from '../utils'
 
-export const appName = 'snapcli'
+export const appName = pkgName
 export const appEnvName = '.env'
 export const appConfigDirName = '.snapcli'
 export const appConfigLog = 'logs'
