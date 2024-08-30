@@ -15,10 +15,10 @@ const program = new commander.Command()
 
 export async function register () {
   program
-    .name(Object.keys(pkg.bin)[0])
-    .usage('<command> [options]')
+    .name(colors.green(Object.keys(pkg.bin)[0]))
+    .usage(colors.yellow('<command> [options]'))
     .version(pkg.version)
-    // .description('')
+    .description('Command-line tool for casting votes on Snapshot.org DAO proposals directly from your terminal.')
     .option('-d, --debug', 'show debug log', false)
 
   program
@@ -85,8 +85,12 @@ export async function register () {
     })
 
   program
-    .command('clean [item]')
+    .command('clean [item]'
+      // , { hidden: true }
+    )
     .description('clean local settings')
+    // .addArgument(new commander.Argument('<drink-size>', 'drink cup size').choices(['small', 'medium', 'large']))
+    // .addArgument(new commander.Argument('[timeout]', 'timeout in seconds').default(60, 'one minute'))
     .action((key, options, command) => {
       snapcliDebug('clean:', key, options)
       checkClean(key)
@@ -120,7 +124,13 @@ export async function register () {
       process.exit(1)
     }
   })
+  // program.addHelpText('beforeAll', '----------built by ioplus.tech----------')
+  //   .addHelpText('before', 'before----------built by ioplus.tech----------')
+  //   .addHelpText('after', 'after----------built by ioplus.tech----------')
+  //   .addHelpText('afterAll', '----------built by ioplus.tech----------')
   program.parse(process.argv)
+  // const helpInfo = program.helpInformation()
+  // console.log(helpInfo)
   if (program.args.length < 1) {
     program.outputHelp()
     console.log()

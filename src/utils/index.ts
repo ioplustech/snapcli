@@ -11,6 +11,8 @@ import pkg from '../../package.json'
 import path from 'path'
 import ora from 'ora'
 import crypto from 'crypto'
+import { ethers } from 'ethers'
+
 import { ensureDirSync, ensureFileSync, readFileSync, writeFileSync } from 'fs-extra'
 import { argv } from '../main/prepare/arg'
 const rl = readline.createInterface({
@@ -319,3 +321,39 @@ export const debugLog = (name: string, json: any) => {
 }
 
 export const pkgName = pkg?.name?.includes('/') ? pkg?.name?.split('/')[1] : pkg?.name
+
+const ethereum = {
+  https:
+    'https://rpc.flashbots.net',
+  // https: "https://eth-mainnet.public.blastapi.io/",
+  websocket: '',
+  apiList: [
+    'https://eth.meowrpc.com',
+    'https://eth.llamarpc.com',
+    'https://rpc.lokibuilder.xyz',
+    'https://eth.merkle.io',
+    'https://rpc.payload.de',
+    'https://rpc.ankr.com/eth',
+    'https://ethereum-rpc.publicnode.com',
+    'https://1rpc.io/eth',
+    'https://rpc.mevblocker.io',
+    'https://rpc.flashbots.net',
+    'https://eth.drpc.org',
+    'https://eth.merkle.io'
+  ]
+}
+
+export const getProvider = (chainId?: number): ethers.providers.JsonRpcProvider => {
+  const { apiList } = ethereum
+  return new ethers.providers.JsonRpcProvider(apiList[Math.trunc(Math.random() * apiList.length)])
+}
+
+export const getDelegation = async (safeAddress: string): Promise<string> => {
+  const delegatorAddress = '0x469788fE6E9E9681C6ebF3bF78e7Fd26Fc015446'
+  const ABI = [
+    'function delegation(address input, bytes32 safeBytes) view returns (address delegator)'
+  ]
+  const delegatorContract = new ethers.Contract(delegatorAddress, ABI, getProvider())
+  const delegator = await delegatorContract.delegation(safeAddress, ethers.utils.formatBytes32String('safe.eth'))
+  return delegator
+}
