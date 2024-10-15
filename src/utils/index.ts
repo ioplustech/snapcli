@@ -9,32 +9,12 @@ import { snapcliDebug } from '../main/prepare/debug'
 import { appAuthPath, appConfigPath } from '../constants'
 import pkg from '../../package.json'
 import path from 'path'
-import ora from 'ora'
+import ora, { type Ora } from 'ora'
 import crypto from 'crypto'
 import { ensureDirSync, ensureFileSync, readFileSync, writeFileSync } from 'fs-extra'
 import { argv } from '../main/prepare/arg'
-const rl = readline.createInterface({
-  input: process.stdin,
-  output: process.stdout
-})
 
-export const confirmReadline = async (
-  question: string,
-  passReg: RegExp = /y/gim
-): Promise<any> => await new Promise((resolve) => {
-  rl.question(question, (answer: string) => {
-    if (passReg.test(answer) || answer === '' /* enter key */) {
-      resolve({ confirm: true, answer, close: () => { rl.close() } }); return
-    }
-    resolve({ confirm: false, answer, close: () => { rl.close() } })
-  })
-})
-export const asyncSleep = async (number: number) => {
-  await new Promise((resolve) => {
-    setTimeout(resolve, number)
-  })
-}
-export const defaultUserAgent = [
+export const DEFAULT_USER_AGENTS = [
   'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
   'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:89.0) Gecko/20100101 Firefox/89.0',
   'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.1.1 Safari/605.1.15',
@@ -47,231 +27,240 @@ export const defaultUserAgent = [
   'Mozilla/5.0 (Windows NT 6.1; Win64; x64; rv:89.0) Gecko/20100101 Firefox/89.0',
   'Mozilla/5.0 (Android 9; Mobile; rv:68.0) Gecko/68.0 Firefox/88.0'
 ]
-export const randomUserAgent = () => defaultUserAgent[Math.trunc(Math.random() * defaultUserAgent.length)]
-export const fetchApi = async (
-  apiUrl: string,
-  method = 'GET',
-  params: any,
-  body: any
-) => {
-  let defineHeaders = {}
-  let type: any = { 'Content-Type': 'application/json' }
-  if (
-    (params?.type && params.type !== 'json') ||
-    (body?.type && body.type !== 'json')
-  ) {
-    type = {}
-  }
-  if (params?.headers) {
-    defineHeaders = { ...defineHeaders, ...params.headers }
-    delete params.headers
-  }
-  if (body?.headers) {
-    defineHeaders = { ...defineHeaders, ...body.headers }
-    delete body.headers
-  }
-  if (params) delete params.type
-  if (body) delete body.type
-  const headers = {
-    ...type,
-    ...defineHeaders,
-    'User-Agent': randomUserAgent()
-  }
-  const options: AxiosRequestConfig = {
-    method,
-    headers,
-    params: { null: null },
-    data: { null: null }
-  }
-  if (params) options.params = params
-  if (body) options.data = body
-  if (params?.signal) {
-    options.signal = params?.signal
-  }
-  return await axios(apiUrl, options).then((res: AxiosResponse) => res.data)
+
+// Types
+interface ConfirmResult {
+  confirm: boolean
+  answer: string
+  close: () => void
 }
 
-export const fetchApiWithTimeout = async (
-  apiUrl: string,
-  method = 'GET',
-  params: any,
-  body: any,
-  timeout: string | number
-) => await new Promise((resolve, reject) => {
-  const start = ora('start to check chaty version...').start()
-  try {
-    const controller = new AbortController()
-    if (params) {
-      params.signal = controller.signal
-    }
-    const timer = setTimeout(() => {
-      start.stop()
-      controller.abort()
-      resolve('timeout')
-      snapcliDebug('check chaty version timeout')
-    }, Number(timeout))
-    fetchApi(apiUrl, method, params, body)
-      .then((res) => {
-        start.succeed('check chaty version succeed')
-        resolve(res)
-      })
-      .catch((err) => {
-        snapcliDebug(`check chaty version error: ${(err as Error).message}`)
-        start.stop()
-        reject(err)
-      })
-      .finally(() => {
-        clearTimeout(timer)
-      })
-  } catch (err) {
-    snapcliDebug((err as Error).message)
-    snapcliDebug('check chaty version error')
-    start.stop()
-    reject(err)
-  }
-})
-
-export const runChildProcess = (
-  name: string,
-  execPath: string,
-  args: string[],
-  options: any
-) => {
-  const childProcess = spawn(execPath, args, options)
-  snapcliDebug(`runChildProcess: ${name}, pid: ${String(childProcess.pid)}`)
-  childProcess.stdout?.on('data', (data) => {
-    console.log(data.toString())
-  })
-  childProcess.stderr?.on('data', (data) => {
-    console.log(data.toString())
-  })
-  childProcess.on('exit', (code) => {
-    snapcliDebug(`childProcess.on('exit'): ${name}, data: ${String(code)}`)
-  })
-  return childProcess
-}
-export const runChildPromise = async (
-  name: string,
-  execPath: string,
-  args: string[],
-  options: any
-) => await new Promise((resolve, reject) => {
-  const childProcess = spawn(execPath, args, options)
-  snapcliDebug(`runChildProcess: ${name}, pid: ${String(childProcess.pid)}`, execPath, args)
-  let output = ''
-  childProcess.stdout?.on('data', (data) => {
-    output += data.toString() as string
-    console.log(data.toString() as string)
-  })
-  let errorOut = ''
-  childProcess.stderr?.on('data', (data) => {
-    errorOut += data.toString() as string
-  })
-  childProcess.on('exit', (code) => {
-    snapcliDebug(`childProcess.on('exit'): ${name}, data: ${String(code)}`)
-    snapcliDebug('output', output)
-    if (code !== 0) {
-      snapcliDebug('errorOut', errorOut)
-    }
-    resolve(output)
-  })
-  childProcess.on('error', (err) => {
-    snapcliDebug(`childProcess.on('error'): ${name},`, err)
-    reject(err)
-  })
-  return childProcess
-})
 interface ProcessResult {
   stdout: string
   stderr: string
 }
 
-/**
- * Runs a command in a child process using spawn.
- * @param command - The command to run.
- * @param args - An array of arguments to pass to the command.
- * @param options - Options to pass to spawn.
- * @returns A promise that resolves with stdout and stderr strings.
- */
-export async function runProcess (command: string, args: string[] = [], options: SpawnOptions = {}, showLog = false): Promise<ProcessResult> {
-  return await new Promise((resolve, reject) => {
-    const process = spawn(command, args, options)
+interface EncryptResult {
+  iv: string
+  encryptedData: string
+}
 
-    let stdout = ''
-    let stderr = ''
+// Utility Functions
+export const confirmReadline = async (
+  question: string,
+  passReg: RegExp = /y/gim
+): Promise<ConfirmResult> => {
+  const rl = readline.createInterface({
+    input: process.stdin,
+    output: process.stdout
+  })
 
-    process.stdout?.on('data', (data: Buffer) => {
-      stdout += data.toString()
-      showLog && console.log(`stdout: ${data.toString()}`)
-    })
-
-    process.stderr?.on('data', (data: Buffer) => {
-      stderr += data.toString()
-      showLog && console.error(`stderr: ${data.toString()}`)
-    })
-
-    process.on('close', (code: number | null) => {
-      if (code === 0) {
-        resolve({ stdout, stderr })
-      } else {
-        reject(new Error(`Process exited with code ${String(code)}\nstderr: ${stderr}`))
-      }
-    })
-
-    process.on('error', (err: Error) => {
-      reject(new Error(`Failed to start process: ${err.message}`))
+  return await new Promise((resolve) => {
+    rl.question(question, (answer: string) => {
+      const confirm = passReg.test(answer) || answer === ''
+      resolve({ confirm, answer, close: () => { rl.close() } })
     })
   })
 }
-export const runChildProcessSync = (execStr: string, options: any) => {
+
+export const asyncSleep = async (ms: number): Promise<void> => { await new Promise((resolve) => setTimeout(resolve, ms)) }
+
+export const randomUserAgent = (): string =>
+  DEFAULT_USER_AGENTS[Math.floor(Math.random() * DEFAULT_USER_AGENTS.length)]
+
+export const fetchApi = async (
+  apiUrl: string,
+  method = 'GET',
+  params: Record<string, any> = {},
+  body: Record<string, any> = {}
+): Promise<any> => {
+  const headers: Record<string, string> = {
+    'Content-Type': 'application/json',
+    'User-Agent': randomUserAgent(),
+    ...params.headers,
+    ...body.headers
+  }
+
+  delete params.headers
+  delete body.headers
+
+  const options: AxiosRequestConfig = {
+    method,
+    headers,
+    params,
+    data: body,
+    signal: params.signal
+  }
+
+  const response: AxiosResponse = await axios(apiUrl, options)
+  return response.data
+}
+
+export const fetchApiWithTimeout = async (
+  apiUrl: string,
+  method = 'GET',
+  params: Record<string, any> = {},
+  body: Record<string, any> = {},
+  timeout: number
+): Promise<any> => {
+  const spinner = ora('Checking Chaty version...').start()
+
+  try {
+    const controller = new AbortController()
+    params.signal = controller.signal
+
+    const timeoutPromise = new Promise((_, reject) => {
+      setTimeout(() => {
+        controller.abort()
+        reject(new Error('Request timed out'))
+      }, timeout)
+    })
+
+    const fetchPromise = fetchApi(apiUrl, method, params, body)
+
+    const result = await Promise.race([fetchPromise, timeoutPromise])
+    spinner.succeed('Chaty version check succeeded')
+    return result
+  } catch (error) {
+    spinner.fail('Chaty version check failed')
+    snapcliDebug(`Check Chaty version error: ${(error as Error).message}`)
+    throw error
+  }
+}
+
+export const runChildProcess = (
+  name: string,
+  execPath: string,
+  args: string[],
+  options: SpawnOptions
+): ReturnType<typeof spawn> => {
+  const childProcess = spawn(execPath, args, options)
+  snapcliDebug(`runChildProcess: ${name}, pid: ${childProcess.pid!}`)
+
+  childProcess.stdout?.on('data', (data) => { console.log(data.toString()) })
+  childProcess.stderr?.on('data', (data) => { console.error(data.toString()) })
+  childProcess.on('exit', (code) => { snapcliDebug(`childProcess.on('exit'): ${name}, code: ${code ?? ''}`) }
+  )
+
+  return childProcess
+}
+
+export const runChildPromise = async (
+  name: string,
+  execPath: string,
+  args: string[],
+  options: SpawnOptions
+): Promise<string> => await new Promise((resolve, reject) => {
+  const childProcess = spawn(execPath, args, options)
+  snapcliDebug(`runChildProcess: ${name}, pid: ${childProcess.pid!}`, execPath, args)
+
+  let output = ''
+  let errorOutput = ''
+
+  childProcess.stdout?.on('data', (data: Buffer | string) => {
+    output += data.toString()
+    console.log(data.toString())
+  })
+
+  childProcess.stderr?.on('data', (data: Buffer | string) => {
+    errorOutput += data.toString()
+  })
+
+  childProcess.on('exit', (code) => {
+    snapcliDebug(`childProcess.on('exit'): ${name}, code: ${code ?? ''}`)
+    snapcliDebug('output', output)
+    if (code !== 0) {
+      snapcliDebug('errorOutput', errorOutput)
+    }
+    resolve(output)
+  })
+
+  childProcess.on('error', (err) => {
+    snapcliDebug(`childProcess.on('error'): ${name},`, err)
+    reject(err)
+  })
+})
+
+export const runProcess = async (
+  command: string,
+  args: string[] = [],
+  options: SpawnOptions = {},
+  showLog = false
+): Promise<ProcessResult> => await new Promise((resolve, reject) => {
+  const process = spawn(command, args, options)
+  let stdout = ''
+  let stderr = ''
+
+  process.stdout?.on('data', (data: Buffer) => {
+    stdout += data.toString()
+    if (showLog) console.log(`stdout: ${data.toString()}`)
+  })
+
+  process.stderr?.on('data', (data: Buffer) => {
+    stderr += data.toString()
+    if (showLog) console.error(`stderr: ${data.toString()}`)
+  })
+
+  process.on('close', (code: number | null) => {
+    if (code === 0) {
+      resolve({ stdout, stderr })
+    } else {
+      reject(new Error(`Process exited with code ${code ?? ''}\nstderr: ${stderr}`))
+    }
+  })
+
+  process.on('error', (err: Error) => {
+    reject(new Error(`Failed to start process: ${err.message}`))
+  })
+})
+
+export const runChildProcessSync = (execStr: string, options: any): void => {
   try {
     const res = execSync(execStr, options)
     snapcliDebug(res.toString())
   } catch (err) {
-    console.log(err)
+    console.error(err)
   }
 }
-export const writeHomeEnv = function (prop: string, value: string) {
+
+export const writeHomeEnv = (prop: string, value: string): void => {
   const destEnvPath = path.resolve(appConfigPath, '.env')
   ensureFileSync(destEnvPath)
   const destKey = dotenv.parse(readFileSync(destEnvPath, 'utf-8'))
   destKey[prop] = value
-  let newContent = ''
-  for (const line in destKey) {
-    const content = `${os.EOL}${line}=${destKey[line]}${os.EOL}`
-    newContent += content
-  }
+  const newContent = Object.entries(destKey)
+    .map(([key, val]) => `${key}=${val}`)
+    .join(os.EOL)
   writeFileSync(destEnvPath, newContent, 'utf-8')
 }
 
-export function spinnerStart (loadingMsg = 'loading') {
-  const spinner = ora({
-    text: `${loadingMsg}...`,
-    spinner: {
-      interval: 80,
-      frames: '|/-\\'.split('')
-    }
-  }).start()
-  return spinner
-}
-export const isValidUrl = (urlStr: string) => {
+export const spinnerStart = (loadingMsg = 'loading'): Ora => ora({
+  text: `${loadingMsg}...`,
+  spinner: {
+    interval: 80,
+    frames: '|/-\\'.split('')
+  }
+}).start()
+
+export const isValidUrl = (urlStr: string): boolean => {
   try {
-    return Boolean(new URL(urlStr))
+    // eslint-disable-next-line no-new
+    new URL(urlStr)
+    return true
   } catch (e) {
     return false
   }
 }
-export const readHomeEnv = (prop: string, envPath: string) => {
-  if (!prop || !envPath) throw new Error('prop and envPath are needed!')
+
+export const readHomeEnv = (prop: string, envPath: string): string => {
+  if (!prop || !envPath) throw new Error('prop and envPath are required!')
   const envConfig = dotenv.parse(readFileSync(envPath, 'utf-8'))
   return envConfig[prop]
 }
 
-export function generateKey () {
-  return crypto.randomBytes(16).toString('hex')
-}
+export const generateKey = (): string => crypto.randomBytes(16).toString('hex')
 
-export function encrypt (text: string, key: string) {
+export const encrypt = (text: string, key: string): EncryptResult => {
   const iv = crypto.randomBytes(16)
   const cipher = crypto.createCipheriv('aes-256-cbc', Buffer.from(key), iv)
   let encrypted = cipher.update(text)
@@ -279,39 +268,35 @@ export function encrypt (text: string, key: string) {
   return { iv: iv.toString('hex'), encryptedData: encrypted.toString('hex') }
 }
 
-export function decrypt (_iv: string, _encryptedData: string, key: string) {
-  const iv = Buffer.from(_iv, 'hex')
-  const encryptedText = Buffer.from(_encryptedData, 'hex')
-  const decipher = crypto.createDecipheriv('aes-256-cbc', Buffer.from(key), iv)
-  let decrypted = decipher.update(encryptedText)
+export const decrypt = (iv: string, encryptedData: string, key: string): string => {
+  const decipher = crypto.createDecipheriv('aes-256-cbc', Buffer.from(key), Buffer.from(iv, 'hex'))
+  let decrypted = decipher.update(Buffer.from(encryptedData, 'hex'))
   decrypted = Buffer.concat([decrypted, decipher.final()])
   return decrypted.toString()
 }
 
-export const writeHomeAuth = function (prop: string, value: string) {
+export const writeHomeAuth = (prop: string, value: string): void => {
   ensureFileSync(appAuthPath)
   const destKey = dotenv.parse(readFileSync(appAuthPath, 'utf-8'))
   destKey[prop] = value
-  let newContent = ''
-  for (const line in destKey) {
-    const content = `${os.EOL}${line}=${destKey[line]}${os.EOL}`
-    newContent += content
-  }
+  const newContent = Object.entries(destKey)
+    .map(([key, val]) => `${key}=${val}`)
+    .join(os.EOL)
   writeFileSync(appAuthPath, newContent, 'utf-8')
 }
 
-export const wirteJSON = (path: string, json: any) => {
-  writeFileSync(path, JSON.stringify(json, null, 2))
+export const writeJSON = (filePath: string, json: any): void => {
+  writeFileSync(filePath, JSON.stringify(json, null, 2))
 }
 
-export const writeTmpJSON = (name: string, json: any) => {
+export const writeTmpJSON = (name: string, json: any): void => {
   const tmpDir = path.resolve(appConfigPath, 'tmp')
   ensureDirSync(tmpDir)
-  const p = path.resolve(tmpDir, `${name}.json`)
-  wirteJSON(p, json)
+  const filePath = path.resolve(tmpDir, `${name}.json`)
+  writeJSON(filePath, json)
 }
 
-export const debugLog = (name: string, json: any) => {
+export const debugLog = (name: string, json: any): void => {
   if (argv.debug || argv.d) {
     snapcliDebug(`debugLog: ${name}`)
     writeTmpJSON(name, json)
