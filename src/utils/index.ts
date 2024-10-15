@@ -111,7 +111,7 @@ export const fetchApiWithTimeout = async (
     const controller = new AbortController()
     params.signal = controller.signal
 
-    const timeoutPromise = new Promise((_, reject) => {
+    const timeoutPromise = new Promise((resolve, reject) => {
       setTimeout(() => {
         controller.abort()
         reject(new Error('Request timed out'))

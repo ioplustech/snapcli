@@ -124,10 +124,6 @@ export async function register () {
       process.exit(1)
     }
   })
-  // program.addHelpText('beforeAll', '----------built by ioplus.tech----------')
-  //   .addHelpText('before', 'before----------built by ioplus.tech----------')
-  //   .addHelpText('after', 'after----------built by ioplus.tech----------')
-  //   .addHelpText('afterAll', '----------built by ioplus.tech----------')
   program.parse(process.argv)
   // const helpInfo = program.helpInformation()
   // console.log(helpInfo)
