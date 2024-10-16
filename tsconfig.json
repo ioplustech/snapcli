@@ -12,6 +12,6 @@
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true
   },
-  "include": ["src/**/*.ts", "src/index.ts", "./.eslintrc.js"],
+  "include": ["src/**/*.ts", "src/index.ts", "./.eslintrc.js", "test"],
   "exclude": ["node_modules"]
 }

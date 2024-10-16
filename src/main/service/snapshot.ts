@@ -192,13 +192,13 @@ class SnapshotService {
     if (type === 'single-choice') {
       console.log(colors.green(prompt))
       const choice = await commandLine(choicesPrompt)
-      return parseInt(choice)
+      return parseInt(choice!)
     }
     if (type === 'approval') {
       prompt = 'please choose which your want to vote(multiple choose with comma, like 1,2,3) then press enter!'
       console.log(colors.green(prompt))
       const choice = await commandLine(choicesPrompt)
-      const choiceList = choice.split(',').map((str: string) => str.trim()).filter(Boolean).map((str: string) => parseInt(str))
+      const choiceList = choice!.split(',').map((str: string) => str.trim()).filter(Boolean).map((str: string) => parseInt(str))
       return choiceList
     }
     const defaultChoice = await Promise.resolve(1)
