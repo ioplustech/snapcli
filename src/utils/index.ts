@@ -57,7 +57,12 @@ export const confirmReadline = async (
     output: process.stdout
   })
 
-  return await new Promise((resolve) => {
+  return await new Promise((resolve, reject) => {
+    rl.on('error', (err) => {
+      console.error("readline error:", err);
+      reject(new Error(`readline error: ${err.message}`));
+      rl.close();
+    });
     rl.question(question, (answer: string) => {
       const confirm = passReg.test(answer) || answer === ''
       resolve({ confirm, answer, close: () => { rl.close() } })

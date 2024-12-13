@@ -1,4 +1,6 @@
 declare let process: {
+  stdout: NodeJS.WritableStream
+  stdin: NodeJS.ReadableStream
   env: {
     NODE_ENV: string
     OPEN_AI_KEY: string
