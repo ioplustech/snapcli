@@ -73,6 +73,7 @@ const setupCommands = () => {
     .option('-y, --yes', 'vote without confirm')
     .option('--refuse', 'refuse vote')
     .option('--accept', 'accept vote')
+    .option('--forceVote', 'force vote')
     .option('--privateKey <privateKey>', 'input your private key')
     .action(async (space: string, options, command: CommandOptions) => {
       snapcliDebug('run:', space, options)
