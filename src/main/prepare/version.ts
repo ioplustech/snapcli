@@ -59,7 +59,7 @@ export async function checkVersion () {
     writeHomeEnv(LAST_VERSION_CHECK, String(Date.now()))
     snapcliDebug(`write home .env ${LAST_VERSION_CHECK}, ${Date.now()} succeed!`)
     const fullUrl = new URL(`${projectName}/latest`, npmRegistry).toString()
-    const data = await fetchApiWithTimeout(fullUrl, 'POST', null, null, 2.5 * 1e3)
+    const data = await fetchApiWithTimeout(fullUrl, 'POST', undefined, undefined, 2.5 * 1e3)
     if (data === 'timeout') {
       snapcliDebug('fetchApiWithTimeout timeout')
       return
