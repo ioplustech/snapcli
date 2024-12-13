@@ -5,6 +5,7 @@ import { snapshot } from '../service/snapshot'
 import { checkProposals, checkScore, checkWallets } from '../checker'
 import { type Command } from 'commander'
 import colors from 'colors'
+import { argv } from '../prepare/arg'
 
 export interface Proposal {
   id: 'string'
@@ -19,12 +20,25 @@ export interface Proposal {
   }
 }
 
-export async function voteProposals (proposals: Proposal[]) {
+export async function voteProposals(proposals: Proposal[]) {
   for (const proposal of proposals) {
     const proposalDetailSpin = spinnerStart(`start to get proposal detail [${proposal.title}]...`)
     const proposalDetail = await snapshot.getProposalDetail(proposal.id, proposal.title)
     debugLog('proposalDetail', proposalDetail)
     proposalDetailSpin.succeed('get proposal detail succeed!')
+
+
+    const checkVotedSpin = spinnerStart(`start to checkVoted [${proposal.title}]...`)
+    const voted = await snapshot.checkVoted(proposalDetail, walletStorage.getWallet().address)
+    checkVotedSpin.succeed('checkVoted succeed!')
+    if (voted.length) {
+      const { choice, reason } = voted[0]
+      console.log(`voted: choice: ${choice}, reason: ${reason}\n`)
+      if (!argv.forceVote) {
+        console.log(`skip voted!`)
+        continue
+      }
+    }
 
     const checkScoreSpin = spinnerStart(`start to checkScore [${proposal.title}]...`)
     const score = await snapshot.checkScore(proposalDetail, walletStorage.getWallet().address)
@@ -32,22 +46,23 @@ export async function voteProposals (proposals: Proposal[]) {
     checkScoreSpin.succeed(`checkScore: ${colors.green(String(score as number))} succeed!`)
 
     console.log(colors.yellow(`start to vote with: ${proposal?.space?.id} - ${proposal?.title} ${score as number}`))
-    const choice = await snapshot.getChoice(proposalDetail)
+    const { choice, reason } = await snapshot.getChoice(proposalDetail)
     const data = {
       address: walletStorage.getWallet().address,
       proposal: proposalDetail,
-      choice
+      choice,
+      reason
     }
     debugLog('voteData', data)
     const voteSpin = spinnerStart(`start to vote [${proposal.title}]...`)
     const id = await snapshot.vote(data)
     debugLog('voteId', id)
-    voteSpin.succeed(`vote: ${id as string} succeed!\n`)
+    voteSpin.succeed(`[${walletStorage.getWallet().address}]vote: ${id as string} succeed!\n`)
   }
   process.exit(0)
 }
 
-export async function runVoteService (space: string, opts: Record<string, string>, command: Command) {
+export async function runVoteService(space: string, opts: Record<string, string>, command: Command) {
   snapcliDebug('runVoteService...')
   snapcliDebug('opts', opts)
 

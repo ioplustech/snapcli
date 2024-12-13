@@ -1,3 +1,4 @@
+import { ChoiceAndReason } from '../../types'
 import AxiosFetchWrapper from '../../utils/fetch'
 import { commandLine } from '../commands'
 import { snapcliDebug } from '../prepare/debug'
@@ -15,12 +16,12 @@ class SnapshotService {
   apiBase: string
   fetcher: AxiosFetchWrapper
   proposalCache: Record<string, any> = {}
-  constructor () {
+  constructor() {
     this.apiBase = 'https://hub.snapshot.org/graphql'
     this.fetcher = new AxiosFetchWrapper(this.apiBase)
   }
 
-  async getProposals (space: string) {
+  async getProposals(space: string) {
     const data = {
       operationName: 'Proposals',
       variables: {
@@ -56,7 +57,7 @@ class SnapshotService {
     return this.proposalCache[space]
   }
 
-  async getProposalDetail (id: string, name: string) {
+  async getProposalDetail(id: string, name: string) {
     const data = {
       operationName: 'Proposal',
       query: `query Proposal($id: String!) {
@@ -112,7 +113,7 @@ class SnapshotService {
     return this.proposalCache[id]
   }
 
-  async checkScore (proposal: any, address: string) {
+  async checkScore(proposal: any, address: string) {
     const apiUrl = 'https://score.snapshot.org/'
     const data = {
       id: null,
@@ -133,7 +134,7 @@ class SnapshotService {
     return vp
   }
 
-  async checkVoted (proposal: any, address: string) {
+  async checkVoted(proposal: any, address: string) {
     const data = {
       operationName: 'Votes',
       variables: {
@@ -169,7 +170,7 @@ class SnapshotService {
     return votes
   }
 
-  async sendVoteRequest (data: any) {
+  async sendVoteRequest(data: any) {
     const apiUrl = 'https://seq.snapshot.org/'
 
     snapcliDebug(`fetching sendVoteRequest of ${data.address as string}...`)
@@ -178,35 +179,45 @@ class SnapshotService {
     return id
   }
 
-  async getSignature (signData: any) {
+  async getSignature(signData: any) {
     const { domain, types, message } = signData.data
     const signer = walletStorage.getWallet()
     const sig = await signer._signTypedData(domain, types, message)
     return sig
   }
 
-  async getChoice (proposalDetail: any): Promise<number | number[]> {
+  async getChoice(proposalDetail: any): Promise<ChoiceAndReason> {
     const { type, choices } = proposalDetail
+    let __choice: number | number[]
+    let __reason = ''
     let prompt = 'please choose which your want to vote then press enter!'
     const choicesPrompt = `${(choices as string[]).map((choice: string, index: number) => `(${index + 1})${choice}`).join(' ')}: `
     if (type === 'single-choice') {
       console.log(colors.green(prompt))
       const choice = await commandLine(choicesPrompt)
-      return parseInt(choice!)
+      __choice = parseInt(choice!)
     }
     if (type === 'approval') {
       prompt = 'please choose which your want to vote(multiple choose with comma, like 1,2,3) then press enter!'
       console.log(colors.green(prompt))
       const choice = await commandLine(choicesPrompt)
       const choiceList = choice!.split(',').map((str: string) => str.trim()).filter(Boolean).map((str: string) => parseInt(str))
-      return choiceList
+      __choice = choiceList
     }
-    const defaultChoice = await Promise.resolve(1)
-    return defaultChoice
+    if (!__choice!) {
+      __choice = await Promise.resolve(1)
+    }
+    prompt = 'please input your reason why vote this!'
+    console.log(colors.green(prompt))
+    __reason = await commandLine('Your reason: ', (str: string) => false, true) || ''
+    return {
+      choice: __choice,
+      reason: __reason,
+    }
   }
 
-  async vote (data: any) {
-    const { address, proposal, choice } = data
+  async vote(data: any) {
+    const { address, proposal, choice, reason = '' } = data
     const submitBody = {
       address,
       data: {
@@ -255,7 +266,7 @@ class SnapshotService {
           proposal: proposal?.id,
           choice,
           app: 'snapshot',
-          reason: '',
+          reason,
           from: address,
           metadata: '{}',
           timestamp: Math.floor(Date.now() / 1000)

@@ -1,4 +1,5 @@
 declare let process: {
+  exit(arg0: number): unknown
   stdout: NodeJS.WritableStream
   stdin: NodeJS.ReadableStream
   env: {
@@ -10,4 +11,8 @@ declare let process: {
     NODE_PORT: string
     LAST_VERSION_CHECK_TIME: string
   }
+}
+export type ChoiceAndReason = {
+  reason: string;
+  choice: number | number[]
 }
