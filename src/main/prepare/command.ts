@@ -3,6 +3,7 @@ import type { Command as CommandOptions } from 'commander'
 import colors from 'colors'
 import pkg from '../../../package.json'
 import { runVoteService } from '../commands/runVoteService'
+import { runVoteAllService } from '../commands/runVoteAllService'
 import { loginWithPrivateKey, loginWithKeystore } from './login'
 import { cleanItem } from '../commands/clean'
 import { listWallets, useWallet, delWallet } from '../commands/wallet'
@@ -80,6 +81,21 @@ const setupCommands = () => {
       checkSpace(space)
       await checkBeforeAction()
       await runVoteService(space, options, command)
+    })
+
+  program
+    .command('voteAll [space]')
+    .description('vote all wallets for specify space,like <aave.eth> You can find your spaces at https://snapshot.org/#/.')
+    .option('-y, --yes', 'vote without confirm')
+    .option('--refuse', 'refuse vote')
+    .option('--accept', 'accept vote')
+    .option('--forceVote', 'force vote')
+    .option('--privateKey <privateKey>', 'input your private key')
+    .action(async (space: string, options, command: CommandOptions) => {
+      snapcliDebug('run:', space, options)
+      checkSpace(space)
+      await checkBeforeAction()
+      await runVoteAllService(space, options, command)
     })
 
   program

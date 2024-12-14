@@ -20,13 +20,12 @@ export interface Proposal {
   }
 }
 
-export async function voteProposals(proposals: Proposal[]) {
+export async function voteProposals(proposals: Proposal[], noExit = true) {
   for (const proposal of proposals) {
     const proposalDetailSpin = spinnerStart(`start to get proposal detail [${proposal.title}]...`)
     const proposalDetail = await snapshot.getProposalDetail(proposal.id, proposal.title)
     debugLog('proposalDetail', proposalDetail)
     proposalDetailSpin.succeed('get proposal detail succeed!')
-
 
     const checkVotedSpin = spinnerStart(`start to checkVoted [${proposal.title}]...`)
     const voted = await snapshot.checkVoted(proposalDetail, walletStorage.getWallet().address)
@@ -59,11 +58,13 @@ export async function voteProposals(proposals: Proposal[]) {
     debugLog('voteId', id)
     voteSpin.succeed(`[${walletStorage.getWallet().address}]vote: ${id as string} succeed!\n`)
   }
-  process.exit(0)
+  if (!noExit) {
+    process.exit(0)
+  }
 }
 
-export async function runVoteService(space: string, opts: Record<string, string>, command: Command) {
-  snapcliDebug('runVoteService...')
+export async function runVoteAllService(space: string, opts: Record<string, string>, command: Command) {
+  snapcliDebug('runVoteAllService...')
   snapcliDebug('opts', opts)
 
   const getProposalsSpin = spinnerStart('start to getProposals...')
@@ -74,5 +75,15 @@ export async function runVoteService(space: string, opts: Record<string, string>
 
   const wallets = await walletStorage.getWallets()
   checkWallets(wallets)
-  await voteProposals(proposals)
+  const walletAddressList = wallets.map((wa) => wa.address)
+  const currentActive = walletAddressList[walletAddressList.length - 1]
+
+  while (walletAddressList.length) {
+    const active = walletAddressList.pop()!
+    await walletStorage.setActiveAddress(active)
+    console.log('set active:', active)
+    await voteProposals(proposals, true)
+  }
+  console.log('voted all finished!')
+  await walletStorage.setActiveAddress(currentActive)
 }
