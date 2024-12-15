@@ -1,4 +1,5 @@
 import { ChoiceAndReason } from '../../types'
+import { retryRequest } from '../../utils'
 import AxiosFetchWrapper from '../../utils/fetch'
 import { commandLine } from '../commands'
 import { snapcliDebug } from '../prepare/debug'
@@ -50,7 +51,8 @@ class SnapshotService {
     }
     snapcliDebug(`fetching proposals of ${space}`)
     if (!this.proposalCache[space]) {
-      const proposalsRes = await this.fetcher.post('/', data, { headers })
+      const proposalsRes = await retryRequest(async () => await this.fetcher.post('/', data, { headers }))
+
       // console.log('proposalsRes:', proposalsRes?.data?.proposals)
       this.proposalCache[space] = proposalsRes?.data?.proposals
     }
@@ -107,7 +109,8 @@ class SnapshotService {
     }
     snapcliDebug(`fetching proposal detail of ${name}...`)
     if (!this.proposalCache[id]) {
-      const proposalRes = await this.fetcher.post('/', data, { headers })
+      const proposalRes = await retryRequest(async () => await this.fetcher.post('/', data, { headers }))
+
       this.proposalCache[id] = proposalRes?.data?.proposal
     }
     return this.proposalCache[id]
@@ -129,7 +132,7 @@ class SnapshotService {
       }
     }
     snapcliDebug(`fetching checkScore of ${address}...`)
-    const scoreRes = await this.fetcher.post(apiUrl, data, { headers })
+    const scoreRes = await retryRequest(async () => await this.fetcher.post(apiUrl, data, { headers }))
     const vp = scoreRes?.result?.vp
     return vp
   }
@@ -164,7 +167,8 @@ class SnapshotService {
       }`
     }
     snapcliDebug(`fetching checkVoted of ${address}...`)
-    const voteRes = await this.fetcher.post('/', data, { headers })
+    const voteRes = await retryRequest(async () => await this.fetcher.post('/', data, { headers }))
+
     const votes = voteRes?.data?.votes
     // console.log('scoreRes:', vp)
     return votes
@@ -174,7 +178,7 @@ class SnapshotService {
     const apiUrl = 'https://seq.snapshot.org/'
 
     snapcliDebug(`fetching sendVoteRequest of ${data.address as string}...`)
-    const voteRes = await this.fetcher.post(apiUrl, data, { headers })
+    const voteRes = await retryRequest(async () => await this.fetcher.post(apiUrl, data, { headers }))
     const id = voteRes?.id
     return id
   }

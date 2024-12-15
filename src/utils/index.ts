@@ -59,10 +59,10 @@ export const confirmReadline = async (
 
   return await new Promise((resolve, reject) => {
     rl.on('error', (err) => {
-      console.error("readline error:", err);
-      reject(new Error(`readline error: ${err.message}`));
-      rl.close();
-    });
+      console.error("readline error:", err)
+      reject(new Error(`readline error: ${err.message}`))
+      rl.close()
+    })
     rl.question(question, (answer: string) => {
       const confirm = passReg.test(answer) || answer === ''
       resolve({ confirm, answer, close: () => { rl.close() } })
@@ -346,4 +346,32 @@ export const getDelegation = async (safeAddress: string): Promise<string> => {
   const delegatorContract = new ethers.Contract(delegatorAddress, ABI, getProvider())
   const delegator = await delegatorContract.delegation(safeAddress, ethers.utils.formatBytes32String('safe.eth'))
   return delegator
+}
+
+/**
+* async req with retry
+* @param requestFn
+* @param maxRetries
+* @param delayMs
+* @returns
+*/
+export async function retryRequest<T>(
+  requestFn: () => Promise<T>,
+  maxRetries: number = 3,
+  delayMs: number = 10000
+): Promise<T> {
+  let lastError: Error | null = null
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    try {
+      const result = await requestFn()
+      return result
+    } catch (error) {
+      lastError = error instanceof Error ? error : new Error(String(error))
+      if (attempt < maxRetries) {
+        console.warn(`request failed,retry ${attempt} times(total ${maxRetries})`)
+        await new Promise(resolve => setTimeout(resolve, delayMs))
+      }
+    }
+  }
+  throw new Error(`request failed, retried ${maxRetries} times.Last error:${lastError?.message}`)
 }
