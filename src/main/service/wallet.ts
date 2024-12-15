@@ -60,8 +60,8 @@ class EncryptedWalletStorage {
     return walletDataList
   }
 
-  getWallet (): ethers.Wallet {
-    if (!this.activeWallet) {
+  getWallet (force?: boolean): ethers.Wallet {
+    if (!this.activeWallet || force) {
       this.activeWallet = this.walletList[this.walletList.length - 1]
     }
     return this.activeWallet
@@ -135,7 +135,7 @@ class EncryptedWalletStorage {
     }
   }
 
-  private initLoad (): void {
+  initLoad (): void {
     try {
       const fileContents = readFileSync(this.filePath, 'utf8')
       const walletDataList: WalletData[] = fileContents.split('\n').map((line) => line.trim()).filter(Boolean).map((line) => {

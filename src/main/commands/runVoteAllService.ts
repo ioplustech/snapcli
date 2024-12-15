@@ -26,9 +26,9 @@ export async function voteProposals(proposals: Proposal[], noExit = true) {
     const proposalDetail = await snapshot.getProposalDetail(proposal.id, proposal.title)
     debugLog('proposalDetail', proposalDetail)
     proposalDetailSpin.succeed('get proposal detail succeed!')
-
+    if (noExit) { walletStorage.initLoad() }
     const checkVotedSpin = spinnerStart(`start to checkVoted [${proposal.title}]...`)
-    const voted = await snapshot.checkVoted(proposalDetail, walletStorage.getWallet().address)
+    const voted = await snapshot.checkVoted(proposalDetail, walletStorage.getWallet(noExit).address)
     checkVotedSpin.succeed('checkVoted succeed!')
     if (voted.length) {
       const { choice, reason } = voted[0]
