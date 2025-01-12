@@ -1,7 +1,7 @@
 {
   "name": "@ioplus/snapcli",
   "description": "Command-line tool for casting votes on Snapshot.org DAO proposals directly from your terminal.",
-  "version": "0.1.18",
+  "version": "0.1.19",
   "main": "index.js",
   "keywords": [
     "snapshot",

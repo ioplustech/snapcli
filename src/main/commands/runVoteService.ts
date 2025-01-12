@@ -27,7 +27,6 @@ export async function voteProposals(proposals: Proposal[]) {
     debugLog('proposalDetail', proposalDetail)
     proposalDetailSpin.succeed('get proposal detail succeed!')
 
-
     const checkVotedSpin = spinnerStart(`start to checkVoted [${proposal.title}]...`)
     const voted = await snapshot.checkVoted(proposalDetail, walletStorage.getWallet().address)
     checkVotedSpin.succeed('checkVoted succeed!')
@@ -46,7 +45,21 @@ export async function voteProposals(proposals: Proposal[]) {
     checkScoreSpin.succeed(`checkScore: ${colors.green(String(score as number))} succeed!`)
 
     console.log(colors.yellow(`start to vote with: ${proposal?.space?.id} - ${proposal?.title} ${score as number}`))
-    const { choice, reason } = await snapshot.getChoice(proposalDetail)
+    let choice: number | number[]
+    if (argv.accept) {
+      debugLog('specify --accept:', argv.accept)
+      choice = 1
+    }
+    if (argv.refuse) {
+      debugLog('specify --refuse:', argv.refuse)
+      choice = 2
+    }
+    let reason = ''
+    if (choice! === undefined) {
+      const { choice: inputChoice, reason: inputReason } = await snapshot.getChoice(proposalDetail)
+      choice = inputChoice
+      reason = inputReason
+    }
     const data = {
       address: walletStorage.getWallet().address,
       proposal: proposalDetail,
